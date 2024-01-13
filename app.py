@@ -32,9 +32,9 @@ def register_user():
         new_user = User.register(username, password, email, first_name, last_name)
         db.session.add(new_user)
         db.session.commit()
-        #session['user_id'] = new_user.id
+        session['username'] = new_user.username
         flash('Welcome! Successfully Created Your Account!', "success")
-        return redirect('/home')
+        return redirect('/secret')
     return render_template('register.html', form=form)
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -46,9 +46,15 @@ def login_user():
         user = User.authenticate(username, password)
         if user:
             flash(f"Welcome Back, {user.username}!", "primary")
-            #session['user_id'] = user.id
+            session['username'] = user.username
             return redirect('/secret')
         else:
             form.username.errors = ['Invalid username or']
             form.password.errors = ['Invalid password']
     return render_template('login.html', form=form)
+
+@app.route('/logout')
+def logout_user():
+    session.pop('username')
+    flash("Goodbye!", "info")
+    return redirect('/')
