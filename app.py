@@ -10,5 +10,5 @@ connect_db(app)
 
 @app.route("/")
 def home():
-    return "FEELBACK"
+    return render_template('home.html')
 
