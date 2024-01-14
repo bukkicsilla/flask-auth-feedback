@@ -93,6 +93,8 @@ def add_feedback(username):
 
 @app.route('/users/<username>/delete', methods=['POST'])
 def delete_user(username):
+    """Delete user"""
+
     if "username" not in session or username != session['username']:
         raise Unauthorized()
     
@@ -105,13 +107,38 @@ def delete_user(username):
 
 @app.route('/feedback/<int:id>/delete', methods=['POST'])
 def delete_feedback(id):
-    f = Feedback.query.get_or_404(id)
-    if "username" not in session or f.username != session['username']:
+    """Delete feedback"""
+
+    feedback = Feedback.query.get_or_404(id)
+    if "username" not in session or feedback.username != session['username']:
         raise Unauthorized()
-    username = f.username
-    db.session.delete(f)
+    username = feedback.username
+    db.session.delete(feedback)
     db.session.commit()
     return redirect(f'/users/{username}')
+
+@app.route("/feedback/<int:feedback_id>/update", methods=["GET", "POST"])
+def update_feedback(feedback_id):
+    """Show update-feedback form and process it."""
+
+    feedback = Feedback.query.get_or_404(feedback_id)
+
+    if "username" not in session or feedback.username != session['username']:
+        raise Unauthorized()
+    
+    #it shows the existing values
+    form = FeedbackForm(obj=feedback)
+    #form = FeedbackForm()
+
+    if form.validate_on_submit():
+        feedback.title = form.title.data
+        feedback.content = form.content.data
+
+        db.session.commit()
+
+        return redirect(f"/users/{feedback.username}")
+
+    return render_template("updatefeedback.html", form=form, feedback=feedback)
 
     
     
