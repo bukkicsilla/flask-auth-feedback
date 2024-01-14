@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, session, flash
 from models import connect_db, db, User
 from forms import RegisterForm, LoginForm
 from sqlalchemy.exc import IntegrityError
+from werkzeug.exceptions import Unauthorized
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql:///auth_feedback"
@@ -47,7 +48,8 @@ def login_user():
         if user:
             flash(f"Welcome Back, {user.username}!", "primary")
             session['username'] = user.username
-            return redirect('/secret')
+            #return redirect('/secret')
+            return redirect(f'/users/{user.username}')
         else:
             form.username.errors = ['Invalid username or']
             form.password.errors = ['Invalid password']
@@ -58,3 +60,10 @@ def logout_user():
     session.pop('username')
     flash("Goodbye!", "info")
     return redirect('/')
+
+@app.route('/users/<username>')
+def show_user(username):
+    if "username" not in session or username != session['username']:
+        raise Unauthorized()
+    user = User.query.filter_by(username=username).first()
+    return render_template('user.html', user=user)

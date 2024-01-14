@@ -1,0 +1,7 @@
+{% if session['username'] %} {% extends 'base.html' %} {% block title %} User {%
+endblock %} {% block content %}
+<h1>{{user.first_name}} {{user.last_name}}</h1>
+<h3>Username: {{user.username}}</h3>
+<h5>Email: {{user.email}}</h5>
+
+{% endblock %} {% endif %}
