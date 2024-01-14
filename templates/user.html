@@ -13,6 +13,23 @@ block content %}
         {{ feedback.title }}
         <small>{{ feedback.content }}</small>
       </li>
+      <form>
+        {{form.hidden_tag()}}
+        <button
+          class="btn btn-primary"
+          formmethod="GET"
+          formaction="/feedback/{{ feedback.id }}/update"
+        >
+          Edit
+        </button>
+        <button
+          class="btn btn-danger"
+          formmethod="POST"
+          formaction="/feedback/{{ feedback.id }}/delete"
+        >
+          Delete
+        </button>
+      </form>
       {% endfor %}
     </ul>
     <p>

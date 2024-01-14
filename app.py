@@ -1,13 +1,13 @@
 from flask import Flask, render_template, redirect, session, flash
 from models import connect_db, db, User, Feedback
-from forms import RegisterForm, LoginForm, FeedbackForm
+from forms import RegisterForm, LoginForm, FeedbackForm, DeleteForm
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import Unauthorized
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql:///auth_feedback"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ECHO"] = True
+app.config["SQLALCHEMY_ECHO"] = False
 app.config["SECRET_KEY"] = "123456"
 
 connect_db(app)
@@ -72,7 +72,8 @@ def show_user(username):
     if "username" not in session or username != session['username']:
         raise Unauthorized()
     user = User.query.filter_by(username=username).first()
-    return render_template('user.html', user=user)
+    form = DeleteForm()
+    return render_template('user.html', user=user, form=form)
 
 @app.route('/users/<username>/feedback/add', methods=['GET', 'POST'])
 def add_feedback(username):
@@ -101,6 +102,17 @@ def delete_user(username):
     db.session.commit()
     session.pop("username")
     return redirect("/login")
+
+@app.route('/feedback/<int:id>/delete', methods=['POST'])
+def delete_feedback(id):
+    f = Feedback.query.get_or_404(id)
+    if "username" not in session or f.username != session['username']:
+        raise Unauthorized()
+    username = f.username
+    db.session.delete(f)
+    db.session.commit()
+    return redirect(f'/users/{username}')
+
     
     
 
