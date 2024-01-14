@@ -33,6 +33,7 @@ class User(db.Model):
         Return user if valid, else return False.
         """
         user = User.query.filter_by(username=username).first()
+        print("Authenticate user", user)
         if user and bcrypt.check_password_hash(user.password, password):
             return user
         else:

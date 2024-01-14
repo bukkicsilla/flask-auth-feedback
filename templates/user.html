@@ -1,7 +1,29 @@
-{% if session['username'] %} {% extends 'base.html' %} {% block title %} User {%
-endblock %} {% block content %}
+{% extends 'base.html' %} {% block title %} {{user.username}} {% endblock %} {%
+block content %}
 <h1>{{user.first_name}} {{user.last_name}}</h1>
 <h3>Username: {{user.username}}</h3>
 <h5>Email: {{user.email}}</h5>
 
-{% endblock %} {% endif %}
+<div class="row">
+  <div clas="col-sm-10 col-12">
+    <h2 class="mt-4">Feedback</h2>
+    <ul>
+      {% for feedback in user.feedback %}
+      <li>
+        {{ feedback.title }}
+        <small>{{ feedback.content }}</small>
+      </li>
+      {% endfor %}
+    </ul>
+    <p>
+      <a href="/users/{{ user.username }}/feedback/add" class="btn btn-primary">
+        Add Feedback
+      </a>
+    </p>
+    <form action="/users/{{user.username}}/delete" method="POST">
+      <button class="btn btn-danger">Delete User</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
