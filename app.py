@@ -26,6 +26,9 @@ def secret():
 @app.route("/register", methods=['GET', 'POST'])
 def register_user():
     """Register user"""
+    if "username" in session:
+        return redirect(f"/users/{session['username']}")
+    
     form = RegisterForm()
     if form.validate_on_submit():
         username = form.username.data
@@ -35,7 +38,12 @@ def register_user():
         last_name = form.last_name.data
         new_user = User.register(username, password, email, first_name, last_name)
         db.session.add(new_user)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            form.username.errors.append('Username taken.  Please pick another')
+            return render_template('register.html', form=form)
+        #db.session.commit()
         session['username'] = new_user.username
         flash('Welcome! Successfully Created Your Account!', "success")
         return redirect('/secret')
@@ -70,13 +78,21 @@ def logout_user():
 def show_user(username):
     """Show details about user and feedback."""
     if "username" not in session or username != session['username']:
-        raise Unauthorized()
-    user = User.query.filter_by(username=username).first()
-    form = DeleteForm()
-    return render_template('user.html', user=user, form=form)
-
+        flash("Not authenticated or not authorized", "danger")
+        return render_template('401.html')
+        #raise Unauthorized()
+    #user = User.query.filter_by(username=username).first()
+    user = User.query.get_or_404(username)
+    if user:
+        form = DeleteForm()
+        return render_template('user.html', user=user, form=form)
+    else:
+        #not reachable???
+        return render_template('404.html'), 404
+    
 @app.route('/users/<username>/feedback/add', methods=['GET', 'POST'])
 def add_feedback(username):
+    """Add a feedback for a user."""
     if "username" not in session or username != session['username']:
         raise Unauthorized()
 
@@ -139,6 +155,10 @@ def update_feedback(feedback_id):
         return redirect(f"/users/{feedback.username}")
 
     return render_template("updatefeedback.html", form=form, feedback=feedback)
+
+@app.route("/<path>")
+def notfound(path):
+    return render_template('404.html')
 
     
     
